@@ -1,0 +1,5 @@
+{
+  "name": "Intelligent Worker Profiling Tool",
+  "description": "An AI-powered system to analyze task logs, generate worker profiles, create performance reports, and simulate data for worker evaluation and bonus allocation.",
+  "requestFramePermissions": []
+}
