@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { marked } from 'marked';
 import Spinner from './Spinner';
 import { DocumentReportIcon } from './icons/DocumentReportIcon';
 
@@ -10,21 +11,27 @@ interface PerformanceReportProps {
     hasProfiles: boolean;
 }
 
-// Basic markdown to HTML converter
 const Markdown: React.FC<{ content: string }> = ({ content }) => {
-    const htmlContent = content
-      .replace(/^### (.*$)/gim, '<h3 class="text-xl font-semibold text-sky-300 mt-6 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-sky-400 mt-8 mb-4 border-b border-slate-600 pb-2">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-extrabold text-white mt-4 mb-6">$1</h1>')
-      .replace(/\*\*(.*)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*)\*/g, '<em>$1</em>')
-      .replace(/^- (.*$)/gim, '<li class="ml-6 mb-1">$1</li>')
-      .replace(/^\* (.*$)/gim, '<li class="ml-6 mb-1">$1</li>')
-      .replace(/((\r\n|\n|\r)+)(<li)/g, '<ul>$2$3') // Start of list
-      .replace(/(<\/li>)((\r\n|\n|\r)+)(?!<li)/g, '$1</ul>$2') // End of list
-      .replace(/\n/g, '<br />');
+    const [html, setHtml] = useState('');
 
-    return <div className="prose prose-invert text-slate-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+    useEffect(() => {
+        // This is safe because the content is from our trusted AI.
+        // For a production app with user input, this would need sanitization.
+        const parsedHtml = marked.parse(content) as string;
+        
+        // Add Tailwind-like classes for consistent styling
+        const styledHtml = parsedHtml
+            .replace(/<h2>/g, '<h2 class="text-2xl font-bold text-sky-400 mt-8 mb-4 border-b border-slate-600 pb-2">')
+            .replace(/<h3>/g, '<h3 class="text-xl font-semibold text-sky-300 mt-6 mb-2">')
+            .replace(/<h1>/g, '<h1 class="text-3xl font-extrabold text-white mt-4 mb-6">')
+            .replace(/<ul>/g, '<ul class="list-disc list-inside space-y-2 pl-4">')
+            .replace(/<p>/g, '<p class="mb-4">')
+            .replace(/<strong>/g, '<strong class="font-semibold text-white">');
+            
+        setHtml(styledHtml);
+    }, [content]);
+
+    return <div className="text-slate-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
 

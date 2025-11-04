@@ -6,13 +6,14 @@ import Header from './components/Header';
 import LogInput from './components/LogInput';
 import WorkerProfileCard from './components/WorkerProfileCard';
 import PerformanceReport from './components/PerformanceReport';
+import Dashboard from './components/Dashboard';
 import TabButton from './components/TabButton';
 import Spinner from './components/Spinner';
 import { UserGroupIcon } from './components/icons/UserGroupIcon';
 import { DocumentReportIcon } from './components/icons/DocumentReportIcon';
-import { SparklesIcon } from './components/icons/SparklesIcon';
+import { ChartBarIcon } from './components/icons/ChartBarIcon';
 
-type Tab = 'profiles' | 'report' | 'generator';
+type Tab = 'dashboard' | 'profiles' | 'report';
 
 const App: React.FC = () => {
   const [logs, setLogs] = useState<string>('');
@@ -20,7 +21,7 @@ const App: React.FC = () => {
   const [managerReport, setManagerReport] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('profiles');
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
   const handleGenerateLogs = useCallback(async () => {
     setIsLoading(true);
@@ -48,7 +49,7 @@ const App: React.FC = () => {
     try {
       const profiles = await analyzeLogsAndCreateProfiles(logs);
       setWorkerProfiles(profiles);
-      setActiveTab('profiles');
+      setActiveTab('dashboard');
     } catch (e) {
       setError('Failed to analyze logs. The AI model might have returned an unexpected format.');
       console.error(e);
@@ -77,11 +78,13 @@ const App: React.FC = () => {
   }, [workerProfiles]);
 
   const renderContent = () => {
-    if (isLoading && activeTab !== 'generator') {
+    if (isLoading) {
        return <div className="flex justify-center items-center h-96"><Spinner /></div>;
     }
 
     switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard profiles={workerProfiles} />;
       case 'profiles':
         return workerProfiles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -98,8 +101,6 @@ const App: React.FC = () => {
         );
       case 'report':
         return <PerformanceReport report={managerReport} onGenerate={handleGenerateReport} isLoading={isLoading} hasProfiles={workerProfiles.length > 0} />;
-      case 'generator':
-         return <LogInput logs={logs} setLogs={setLogs} onAnalyze={handleAnalyze} onGenerate={handleGenerateLogs} isLoading={isLoading} />;
       default:
         return null;
     }
@@ -117,6 +118,7 @@ const App: React.FC = () => {
             <div className="w-full md:w-2/3 lg:w-3/4">
               <div className="border-b border-slate-700 mb-6">
                 <nav className="flex space-x-2" aria-label="Tabs">
+                  <TabButton onClick={() => setActiveTab('dashboard')} isActive={activeTab === 'dashboard'}><ChartBarIcon className="h-5 w-5 mr-2" /> Dashboard</TabButton>
                   <TabButton onClick={() => setActiveTab('profiles')} isActive={activeTab === 'profiles'}><UserGroupIcon className="h-5 w-5 mr-2" /> Worker Profiles</TabButton>
                   <TabButton onClick={() => setActiveTab('report')} isActive={activeTab === 'report'}><DocumentReportIcon className="h-5 w-5 mr-2" /> Performance Report</TabButton>
                 </nav>
